@@ -1,0 +1,104 @@
+# list of syslog filter
+#
+# file format:
+# <message id>
+# TAB<regex>
+# TAB<parameter list>
+# TAB<extra parameters as k=v>
+# TAB<test syslog>
+# TAB<test expected parsed values>
+# optional: more test log and value lines...
+# 
+106023
+	^Deny (tcp|udp) src (.*):(.*)/(.*) dst (.*):(.*)/(.*) by access-group ".*" .*
+	proto;srcintf;srcip;srcport;dstintf;dstip;dstport
+	action=deny;type=traffic;subtype=forward
+	Deny udp src inside:10.10.10.10/12345 dst outside:2.2.2.2/80 by access-group "global" [0x0, 0x0]
+	udp;inside;10.10.10.10;12345;outside;2.2.2.2;80
+
+106023
+	^Deny (icmp) src ([^:]*):(.*) dst ([^:]*):(.*) \(type (.*), code (.*)\) by access-group ".*" .*
+	proto;srcintf;srcip;dstintf;dstip;icmptype;icmpcode
+	action=deny;type=traffic;subtype=forward
+	Deny icmp src inside:10.10.10.10 dst outside:2.2.2.2 (type 8, code 0) by access-group "inside-in" [0x0, 0x0]
+	icmp;inside;10.10.10.10;outside;2.2.2.2;8;0
+	Deny icmp src inside:2a01:111:222:333::2 dst outside:2a00:111:222:333:444:555:666:777 (type 1, code 3) by access-group "outside-in" [0x0, 0x0]
+	icmp;inside;2a01:111:222:333::2;outside;2a00:111:222:333:444:555:666:777;1;3
+	
+106023
+	^Deny protocol ([^ ]+) src (.*):(.*) dst (.*):(.*) by access-group ".*" .*
+	proto;srcintf;srcip;dstintf;dstip
+	action=deny;type=traffic;subtype=forward
+	Deny protocol 50 src outside:2.2.2.2 dst inside:10.10.10.10 by access-group "outside-in" [0x0, 0x0]
+	50;outside;2.2.2.2;inside;10.10.10.10
+
+106006
+	^Deny inbound (TCP|UDP) from ([^ ]*)\/([^ ]*) to ([^ ]*)\/([^ ]*) on interface ([^ ]*)
+	proto;srcip;srcport;dstip;dstport;srcintf
+	action=deny;type=traffic;subtype=forward
+	Deny inbound UDP from 10.10.10.10/12345 to 2.2.2.2/80 on interface inside
+	UDP;10.10.10.10;12345;2.2.2.2;80;inside
+
+106021
+	^Deny ([^ ]*) reverse path check from ([^ ]*) to ([^ ]*) on interface ([^ ]*)
+	proto;srcip;dstip;srcintf
+	action=deny;type=traffic;subtype=forward
+	Deny IPv6-ICMP reverse path check from :: to ff02::16 on interface inside
+	IPv6-ICMP;::;ff02::16;inside
+
+106100
+	^access-list [^ ]* permitted (tcp|udp) ([^ ]*)\/([^ ]*)\(([^ ]*)\) -> ([^ ]*)\/([^ ]*)\(([^ ]*)\) hit-cnt .*
+	proto;srcintf;srcip;srcport;dstintf;dstip;dstport
+	action=allow;type=traffic;subtype=forward
+	access-list inside-in permitted tcp inside/10.10.10.10(12345) -> outside/2.2.2.2(80) hit-cnt 1 first hit [0x12345678, 0x00000000]
+	tcp;inside;10.10.10.10;12345;outside;2.2.2.2;80
+	
+305006
+	^regular translation creation failed for (icmp) src ([^:]*):([^ ]*) dst ([^:]*):([^ ]*) \(type (.*), code (.*)\)
+	proto;srcintf;srcip;dstintf;dstip;icmptype;icmpcode
+	action=deny;type=traffic;subtype=forward
+	regular translation creation failed for icmp src inside:10.10.10.10 dst outside:2.2.2.2 (type 3, code 3)
+	icmp;inside;10.10.10.10;outside;2.2.2.2;3;3
+
+313005
+	^No matching connection for ICMP error message: (icmp) src ([^:]*):([^ ]*) dst ([^:]*):([^ ]*) \(type (.*), code (.*)\) on [^ ]* interface.  (.*)
+	proto;srcintf;srcip;dstintf;dstip;icmptype;icmpcode;msg
+	action=deny;type=traffic;subtype=forward
+	No matching connection for ICMP error message: icmp src inside:10.10.10.10 dst outside:2.2.2.2 (type 3, code 3) on inside interface.  Original IP payload: udp src 2.2.2.2/80 dst 10.10.10.10/12345.
+	icmp;inside;10.10.10.10;outside;2.2.2.2;3;3;Original IP payload: udp src 2.2.2.2/80 dst 10.10.10.10/12345.
+	
+313008
+	^Denied ([^ ]*) type=(.*), code=(.*) from ([^ ]*) on interface ([^ ]*)
+	proto;icmptype;icmpcode;srpip;srcintf
+	action=deny;type=traffic;subtype=forward
+	Denied IPv6-ICMP type=135, code=0 from 2a01:111:222:333::2 on interface inside
+	IPv6-ICMP;135;0;2a01:111:222:333::2;inside
+	
+710003
+	^(TCP|UDP) access denied by ACL from (.*)/(.*) to (.*):(.*)/(.*)
+	proto;srcip;srcport;dstintf;dstip;dstport
+	action=deny;type=traffic;subtype=forward
+	TCP access denied by ACL from 10.10.10.10/12345 to outside:2.2.2.2/80
+	TCP;10.10.10.10;12345;outside;2.2.2.2;80
+
+733100
+	^\[ ([^ ]*)\] ([^;]*);.*
+	attack;attackcontext
+	action=deny;type=ips;subtype=signature
+	[ Scanning] drop rate-1 exceeded. Current burst rate is 26 per second, max configured rate is 10; Current average rate is 88 per second, max configured rate is 5; Cumulative total count is 53225
+	Scanning;drop rate-1 exceeded. Current burst rate is 26 per second, max configured rate is 10
+
+733100
+	^\[[ ]+Port-.* (.*)\] ([^;]*);.*
+	dstport;attackcontext
+	action=deny;type=ips;subtype=signature;attack=scan port;proto=6
+	[     Port-5247 5247] drop rate-1 exceeded. Current burst rate is 40 per second, max configured rate is 40; Current average rate is 19 per second, max configured rate is 20; Cumulative total count is 11950
+	5247;drop rate-1 exceeded. Current burst rate is 40 per second, max configured rate is 40
+
+733100
+	^\[[ ]+Port-.*\] ([^;]*);.*
+	attackcontext
+	action=deny;type=ips;subtype=signature;attack=scan portrange;proto=6
+	[    Port-8191-65535] drop rate-1 exceeded. Current burst rate is 40 per second, max configured rate is 40; Current average rate is 30 per second, max configured rate is 20; Cumulative total count is 18297
+	drop rate-1 exceeded. Current burst rate is 40 per second, max configured rate is 40
+
