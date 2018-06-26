@@ -8,6 +8,8 @@ The FAZ sees an unregistered device that can be named and used similar to a Fort
 This tool was done to see if it is possible to use the FAZ for consolidated logs of our legacy devices. Currently the FAZ is tricked by faking the device ID. 
 
 # Usage
+Load and unzip the release file. The release comes with the program binary and a basic version of a filter file needed for parsing. You should fetch the [latest from GitHub](https://raw.githubusercontent.com/Nexinto/syslog2faz/master/filter.list)  because it will change more often than the program itself.
+
 Simply start the binary and provide the FAZ IP or name
 
      ./syslog2faz -f 10.10.10.100
@@ -17,7 +19,7 @@ In addition you can tweak some parameters
      -p lstening port
      -t test regular expressions
      -f FortiAnalyzer IP or name
-     -c configuration file location
+     -c configuration (filter) file location
 
 # Configuring the Cisco ASA
 On the ASA you need to provide the IP of the tool as a logging host
@@ -25,7 +27,7 @@ On the ASA you need to provide the IP of the tool as a logging host
      logging host <interface name> <syslog2faz ip> 17/10514
 
 # On the FortiManager / FortiAnalyzer
-First you see the logging firewalls as "Unregistered Devices". They all look like 40Cs with a device name that is the ip address without dots. So an ASA with management IP 10.10.10.10 would be named FGT40C10101010. Now select the device press the "Add" button.
+First you see the logging firewalls as "Unregistered Devices". They all look like 40Cs with a device name that is the ip address without dots. So an ASA with management IP 10.10.10.10 would be named FGT40C**10101010**. Now select the device press the "Add" button.
 <img src="doc/unregistered.PNG">
 
 <img src="doc/add.PNG">
@@ -39,7 +41,7 @@ As a result you have a device, where you can filter on logs, like you can do wit
 # Under the hood: The parser
 The tool needs a filter file to parse the terribly verbose and inconsistent Cisco logs. That file contains the regular expressions for several message ids, the meaning of the parsed values and test patterns to assure that the filters work. I created patterns for the first logs I found, but this file should grow in the future. Therefore I created a compact format, where I hope that others might be able to add filters on their own.
 It looks like this.
-1. line: the message id, something that you see as ASA-4-106023
+1. line: the message id, something that you see as ASA-4-**106023**
 2. line: the regular expression that matches important parameters
 3. line: the list of names of the matched parameters
 4. line: extra key/values
