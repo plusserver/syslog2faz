@@ -53,7 +53,18 @@ It looks like this.
        	Deny udp src inside:10.10.10.10/12345 dst outside:2.2.2.2/80 by access-group "global" [0x0, 0x0]
        	udp;inside;10.10.10.10;12345;outside;2.2.2.2;80
 
-A nice tool to test regular expressions is https://regex101.com/ If you modify the filter.list file you should run
+A nice tool to test regular expressions is https://regex101.com/ 
+<img src="doc/regex101.PNG">
+
+Here you see Regex, the test string an the matches of the test string. We search for 7 parameters that must be named, for example "proto" or "srcintf". As extra we need to say that this is a message of type "traffic" and the packet is denied. The section to parse this message looks like this.
+
+    ^Deny inbound (icmp) src (.*):(.*) dst (.*):(.*) \(type (.*), code (.*)\)
+    proto;srcintf;srcip;dstintf;dstip;icmptype;icmpcode
+    action=deny;type=traffic;subtype=forward
+    Deny inbound icmp src outside:2.2.2.2 dst inside:10.10.10.10 (type 8, code 0)
+    icmp;outside;2.2.2.2;inside;10.10.10.10;8;0
+
+If you modify the filter.list file you should run
 
      ./syslog2faz -t
 afterwards.
