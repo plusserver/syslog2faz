@@ -24,6 +24,18 @@ On the ASA you need to provide the IP of the tool as a logging host
 
      logging host <interface name> <syslog2faz ip> 17/10514
 
+# On the FortiManager / FortiAnalyzer
+First you see the logging firewalls as "Unregistered Devices". They all look like 40Cs with a device name that is the ip address without dots. So an ASA with management IP 10.10.10.10 would be named FGT40C10101010. Now select the device press the "Add" button.
+<img src="doc/unregistered.PNG">
+
+<img src="doc/add.PNG">
+Name the box and click "OK".
+You don't need to provide credentials, but you can move it to another ADOM if needed.
+
+As a result you have a device, where you can filter on logs, like you can do with FortiGates!
+<img src="doc/log.PNG">
+
+
 # Under the hood: The parser
 The tool needs a filter file to parse the terribly verbose and inconsistent Cisco logs. That file contains the regular expressions for several message ids, the meaning of the parsed values and test patterns to assure that the filters work. I created patterns for the first logs I found, but this file should grow in the future. Therefore I created a compact format, where I hope that others might be able to add filters on their own.
 It looks like this.
