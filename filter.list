@@ -8,7 +8,14 @@
 # TAB<test syslog>
 # TAB<test expected parsed values>
 # optional: more test log and value lines...
-# 
+#
+106014
+	^Deny inbound (icmp) src (.*):(.*) dst (.*):(.*) \(type (.*), code (.*)\)
+	proto;srcintf;srcip;dstintf;dstip;icmptype;icmpcode
+	action=deny;type=traffic;subtype=forward
+	Deny inbound icmp src outside:2.2.2.2 dst inside:10.10.10.10 (type 8, code 0)
+	icmp;outside;2.2.2.2;inside;10.10.10.10;8;0
+
 106023
 	^Deny (tcp|udp) src (.*):(.*)/(.*) dst (.*):(.*)/(.*) by access-group ".*" .*
 	proto;srcintf;srcip;srcport;dstintf;dstip;dstport
@@ -47,12 +54,34 @@
 	IPv6-ICMP;::;ff02::16;inside
 
 106100
-	^access-list [^ ]* permitted (tcp|udp) ([^ ]*)\/([^ ]*)\(([^ ]*)\) -> ([^ ]*)\/([^ ]*)\(([^ ]*)\) hit-cnt .*
+	^access-list [^ ]* permitted (tcp|udp|icmp) ([^ ]*)\/([^ ]*)\(([^ ]*)\) -> ([^ ]*)\/([^ ]*)\(([^ ]*)\) hit-cnt .*
 	proto;srcintf;srcip;srcport;dstintf;dstip;dstport
 	action=allow;type=traffic;subtype=forward
 	access-list inside-in permitted tcp inside/10.10.10.10(12345) -> outside/2.2.2.2(80) hit-cnt 1 first hit [0x12345678, 0x00000000]
 	tcp;inside;10.10.10.10;12345;outside;2.2.2.2;80
+
+106102
+	^access-list .* permitted (udp|tcp) for user '(.*)' (.*)/(.*)\((.*)\) -> (.*)/(.*)\((.*)\) .*
+	proto;user;srcintf;srcip;srcport;dstintf;dstip;dstport
+	action=deny;type=traffic;subtype=forward
+	access-list user-acl permitted tcp for user 'username' outside/2.2.2.2(12345) -> inside/10.10.10.10(80) hit-cnt 1 first hit [0x12345678, 0x0]
+	tcp;username;outside;2.2.2.2;12345;inside;10.10.10.10;80
 	
+	
+305005
+	^No translation group found for (tcp|udp) src (.*):(.*)/(.*) dst (.*):(.*)/(.*)
+	proto;srcintf;srcip;srcport;dstintf;dstip;dstport
+	action=deny;type=traffic;subtype=forward
+	No translation group found for tcp src inside:10.10.10.10/12345 dst outside:2.2.2.2/80
+	tcp;inside;10.10.10.10;12345;outside;2.2.2.2;80
+
+305005
+	^No translation group found for (icmp) src (.*):(.*) dst (.*):(.*) \(type (.*), code (.*)\)
+	proto;srcintf;srcip;dstintf;dstip;icmptype;icmpcode
+	action=deny;type=traffic;subtype=forward
+	No translation group found for icmp src outside:2.2.2.2 dst inside:10.10.10.10 (type 8, code 0)
+	icmp;outside;2.2.2.2;inside;10.10.10.10;8;0
+
 305006
 	^regular translation creation failed for (icmp) src ([^:]*):([^ ]*) dst ([^:]*):([^ ]*) \(type (.*), code (.*)\)
 	proto;srcintf;srcip;dstintf;dstip;icmptype;icmpcode
