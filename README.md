@@ -8,7 +8,7 @@ The FAZ sees an unregistered device that can be named and used similar to a Fort
 This tool was done to see if it is possible to use the FAZ for consolidated logs of our legacy devices. Currently the FAZ is tricked by faking the device ID. 
 
 # Usage
-Load and unzip the release file. The release comes with the program binary and a basic version of a filter file needed for parsing. You should fetch the [latest from GitHub](https://raw.githubusercontent.com/Nexinto/syslog2faz/master/filter.list)  because it will change more often than the program itself.
+Load and unzip the [release file](https://github.com/Nexinto/syslog2faz/releases). The release comes with the program binary and a basic version of a filter file needed for parsing. You should fetch the [latest from GitHub](https://raw.githubusercontent.com/Nexinto/syslog2faz/master/filter.list)  because it will change more often than the program itself.
 
 Simply start the binary and provide the FAZ IP or name
 
